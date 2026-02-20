@@ -379,4 +379,324 @@
             <p style="font-size: 0.8rem; margin-top: -10px;">※この領域は提示モードでは絶対に表示されません。</p>
             
             <div class="diary-inputs">
-                <button id="record-btn" onclick="
+                <button id="record-btn" onclick="toggleRecording()">🎤 音声で記録する</button>
+                <div class="diary-text-row">
+                    <input type="text" id="diary-text-input" placeholder="今日の気持ちを文字で綴る..." onkeypress="handleDiaryKeyPress(event)">
+                    <button onclick="addTextDiary()">保存</button>
+                </div>
+            </div>
+            
+            <ul id="diary-list"></ul>
+        </div>
+    </div>
+
+    <div id="presentation-view">
+        <p style="text-align: center; color: #888; font-size: 0.9rem;">
+            はじめまして。円滑なコミュニケーションのため、<br>私の特徴をまとめました。
+        </p>
+        
+        <div class="presentation-card">
+            <h2>🧩 私のクセ・特徴</h2>
+            <div class="presentation-tags" id="presen-habits"></div>
+        </div>
+
+        <div class="presentation-card">
+            <h2>🧭 大切にしている価値観</h2>
+            <div class="presentation-tags" id="presen-values"></div>
+        </div>
+
+        <div class="presentation-card spell-card">
+            <h2>✨ 私の回復呪文</h2>
+            <div class="presentation-tags" id="presen-spells"></div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    /* --- データ構造 (16タイプを意識したプリセット) --- */
+    const defaultData = {
+        habits: [
+            { id: 'h1', text: '1人の時間でエネルギーを回復する (内向型)', isPublic: true },
+            { id: 'h2', text: '色々な可能性やアイデアを思いつく (直感型)', isPublic: true },
+            { id: 'h3', text: '事実や経験に基づいた話が好き (感覚型)', isPublic: false },
+            { id: 'h4', text: '計画を立ててから動きたい (判断型)', isPublic: true },
+            { id: 'h5', text: '臨機応変に予定を変えられる (知覚型)', isPublic: false }
+        ],
+        values: [
+            { id: 'v1', text: '論理的な納得感 (思考型)', isPublic: true },
+            { id: 'v2', text: '感情の共有と調和 (感情型)', isPublic: true },
+            { id: 'v3', text: '自律と自由', isPublic: false },
+            { id: 'v4', text: '誠実さと公平性', isPublic: true }
+        ],
+        spells: [
+            { id: 's1', text: '「なぜ？」という疑問に論理的に答えてくれる', isPublic: true },
+            { id: 's2', text: '「あなたのペースでいいよ」と言ってくれる', isPublic: true },
+            { id: 's3', text: 'とりあえず休む口実を作ってくれる', isPublic: false },
+            { id: 's4', text: '甘いお菓子の差し入れ', isPublic: true }
+        ],
+        diary: [],
+        settings: {
+            fontSize: 16,
+            bgColor: '#FDFBF7'
+        }
+    };
+
+    let appData = {};
+
+    function loadData() {
+        const savedData = localStorage.getItem('my_manual_data_v2'); // キーを変えて初期化
+        if (savedData) {
+            appData = JSON.parse(savedData);
+        } else {
+            appData = JSON.parse(JSON.stringify(defaultData));
+        }
+        applySettings();
+        renderEditView();
+        renderDiary();
+    }
+
+    function saveData() {
+        localStorage.setItem('my_manual_data_v2', JSON.stringify(appData));
+    }
+
+    /* --- UI描画 (編集モード) --- */
+    function renderList(containerId, category) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = '';
+        
+        appData[category].forEach((item, index) => {
+            const row = document.createElement('div');
+            row.className = 'item-row';
+            
+            const textSpan = document.createElement('span');
+            textSpan.className = 'item-text';
+            textSpan.textContent = item.text;
+            
+            const rightDiv = document.createElement('div');
+            rightDiv.style.display = 'flex';
+            rightDiv.style.alignItems = 'center';
+
+            const label = document.createElement('span');
+            label.className = 'public-label';
+            label.textContent = '提示';
+
+            const labelNode = document.createElement('label');
+            labelNode.className = 'toggle-switch';
+            
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.checked = item.isPublic;
+            checkbox.onchange = (e) => {
+                appData[category][index].isPublic = e.target.checked;
+                saveData();
+            };
+
+            const slider = document.createElement('span');
+            slider.className = 'slider';
+
+            labelNode.appendChild(checkbox);
+            labelNode.appendChild(slider);
+            
+            rightDiv.appendChild(label);
+            rightDiv.appendChild(labelNode);
+
+            row.appendChild(textSpan);
+            row.appendChild(rightDiv);
+            container.appendChild(row);
+        });
+    }
+
+    function renderEditView() {
+        renderList('habits-list', 'habits');
+        renderList('values-list', 'values');
+        renderList('spells-list', 'spells');
+    }
+
+    /* --- 任意項目の追加機能 --- */
+    function addNewItem(category, inputId) {
+        const inputElement = document.getElementById(inputId);
+        const text = inputElement.value.trim();
+        
+        if (text !== '') {
+            // 新しい項目をデフォルトで「公開(true)」として追加
+            appData[category].push({
+                id: 'custom_' + Date.now(),
+                text: text,
+                isPublic: true
+            });
+            inputElement.value = ''; // 入力欄をクリア
+            saveData();
+            renderEditView();
+        }
+    }
+
+    /* --- 設定パネル関連 --- */
+    function toggleSettings() {
+        const panel = document.getElementById('settings-panel');
+        panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function applySettings() {
+        document.documentElement.style.setProperty('--font-size-base', appData.settings.fontSize + 'px');
+        document.documentElement.style.setProperty('--bg-color', appData.settings.bgColor);
+        document.getElementById('font-size-slider').value = appData.settings.fontSize;
+        document.getElementById('bg-color-picker').value = appData.settings.bgColor;
+    }
+
+    function updateSettings() {
+        appData.settings.fontSize = document.getElementById('font-size-slider').value;
+        appData.settings.bgColor = document.getElementById('bg-color-picker').value;
+        applySettings();
+        saveData();
+    }
+
+    /* --- モード切替 (提示モード) --- */
+    let isPresentationMode = false;
+
+    function toggleMode() {
+        isPresentationMode = !isPresentationMode;
+        
+        const editView = document.getElementById('edit-view');
+        const presenView = document.getElementById('presentation-view');
+        const modeBtn = document.getElementById('mode-switch-btn');
+        const settingsBtn = document.getElementById('toggle-settings-btn');
+        const settingsPanel = document.getElementById('settings-panel');
+        
+        if (isPresentationMode) {
+            editView.style.display = 'none';
+            settingsBtn.style.display = 'none';
+            settingsPanel.style.display = 'none';
+            presenView.style.display = 'block';
+            modeBtn.innerHTML = '🔙 編集モードへ戻る';
+            modeBtn.classList.add('outline');
+            renderPresentationView();
+        } else {
+            editView.style.display = 'block';
+            settingsBtn.style.display = 'inline-block';
+            presenView.style.display = 'none';
+            modeBtn.innerHTML = '👀 提示モードへ';
+            modeBtn.classList.remove('outline');
+        }
+    }
+
+    function renderTags(containerId, category, tagClass) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = '';
+        
+        const publicItems = appData[category].filter(item => item.isPublic);
+        
+        if (publicItems.length === 0) {
+            container.innerHTML = '<span style="color:#aaa; font-size:0.9rem;">(非公開)</span>';
+            return;
+        }
+
+        publicItems.forEach(item => {
+            const span = document.createElement('span');
+            span.className = `tag ${tagClass}`;
+            span.textContent = item.text;
+            container.appendChild(span);
+        });
+    }
+
+    function renderPresentationView() {
+        renderTags('presen-habits', 'habits', '');
+        renderTags('presen-values', 'values', '');
+        renderTags('presen-spells', 'spells', 'spell-tag');
+    }
+
+    /* --- 非公開日記 (文字・音声入力) --- */
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition;
+    let isRecording = false;
+
+    if (SpeechRecognition) {
+        recognition = new SpeechRecognition();
+        recognition.lang = 'ja-JP';
+        recognition.continuous = true;
+        recognition.interimResults = false;
+
+        recognition.onresult = (event) => {
+            const transcript = event.results[event.results.length - 1][0].transcript;
+            addDiaryEntry(transcript + " (🎙️音声)");
+        };
+
+        recognition.onerror = (event) => {
+            alert('音声認識エラーが発生しました: ' + event.error);
+            stopRecording();
+        };
+    }
+
+    function toggleRecording() {
+        if (!SpeechRecognition) {
+            alert('お使いのブラウザは音声入力に対応していません。文字入力をご利用ください。');
+            return;
+        }
+        if (isRecording) {
+            stopRecording();
+        } else {
+            startRecording();
+        }
+    }
+
+    function startRecording() {
+        recognition.start();
+        isRecording = true;
+        const btn = document.getElementById('record-btn');
+        btn.innerHTML = '⏹️ 録音を停止する';
+        btn.classList.add('recording');
+    }
+
+    function stopRecording() {
+        recognition.stop();
+        isRecording = false;
+        const btn = document.getElementById('record-btn');
+        btn.innerHTML = '🎤 音声で記録する';
+        btn.classList.remove('recording');
+    }
+
+    function addTextDiary() {
+        const input = document.getElementById('diary-text-input');
+        const text = input.value.trim();
+        if (text !== '') {
+            addDiaryEntry(text + " (✍️文字)");
+            input.value = '';
+        }
+    }
+
+    function handleDiaryKeyPress(event) {
+        if (event.key === 'Enter') {
+            addTextDiary();
+        }
+    }
+
+    function addDiaryEntry(text) {
+        const now = new Date();
+        const dateStr = `${now.getMonth()+1}/${now.getDate()} ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
+        appData.diary.unshift({ date: dateStr, text: text });
+        saveData();
+        renderDiary();
+    }
+
+    function renderDiary() {
+        const list = document.getElementById('diary-list');
+        list.innerHTML = '';
+        
+        appData.diary.forEach(entry => {
+            const li = document.createElement('li');
+            const dateSpan = document.createElement('span');
+            dateSpan.className = 'diary-date';
+            dateSpan.textContent = entry.date;
+            
+            li.appendChild(dateSpan);
+            li.appendChild(document.createTextNode(entry.text));
+            list.appendChild(li);
+        });
+    }
+
+    // 初期起動
+    window.onload = loadData;
+
+</script>
+</body>
+</html>
