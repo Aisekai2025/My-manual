@@ -10,7 +10,6 @@
     
     <style>
         :root {
-            /* デフォルトテーマ（Warm Wood） */
             --bg-color: #FDFBF7;
             --text-color: #5C4B40;
             --card-bg: #FFFFFF;
@@ -25,19 +24,15 @@
             font-family: 'Kiwi Maru', serif;
             background-color: var(--bg-color);
             color: var(--text-color);
-            font-size: 18px; /* デフォルト値。JSで動的に変更 */
+            font-size: 18px; /* 基本サイズ */
             margin: 0; padding: 0;
             transition: background-color 0.5s, color 0.5s;
         }
 
-        /* ------------------------------------------
-           文字サイズ（em）ベースの設計
-           親要素（body）のfont-sizeにすべて連動します
-        ------------------------------------------ */
+        /* 文字サイズに連動する em 単位 */
         .container { max-width: 650px; margin: 0 auto; padding: 1.2em; }
         h1 { font-size: 1.4em; color: var(--accent-color); margin: 0; }
-        h2 { font-size: 1.1em; color: var(--accent-color); margin-top: 0; margin-bottom: 0.8em; }
-        h3 { font-size: 1em; margin-top: 0; }
+        h2 { font-size: 1.1em; color: var(--accent-color); margin-bottom: 0.8em; }
         .item-text { font-size: 0.95em; line-height: 1.4; }
         .tag { font-size: 1em; padding: 0.6em 1.2em; border-radius: 2em; display: inline-block; margin: 0.3em; }
 
@@ -72,13 +67,12 @@
 
         .main-star { cursor: pointer; font-size: 1.2em; filter: grayscale(1); transition: 0.2s; margin-right: 0.4em; }
         .main-star.active { filter: grayscale(0); transform: scale(1.2); }
-
-        .delete-btn { background: transparent; color: var(--delete-color); font-size: 1.1em; box-shadow: none; padding: 0.2em; }
+        .delete-btn { background: transparent; color: var(--delete-color); font-size: 1.1em; padding: 0.2em; }
 
         /* 設定パネル */
         .settings-grid {
             display: grid; gap: 1em; background: rgba(0,0,0,0.03);
-            padding: 1em; border-radius: 1em; margin-top: 0.5em;
+            padding: 1.2em; border-radius: 1em; margin-top: 0.5em;
         }
 
         /* 提示モード */
@@ -87,7 +81,6 @@
         .tag.main-focus { background: var(--highlight-color); border: 2px solid var(--spell-color); font-weight: bold; transform: scale(1.1); }
         .spell-tag { background: var(--spell-color); color: white; border: none; }
 
-        /* トグルスイッチ */
         .toggle-switch { position: relative; display: inline-block; width: 34px; height: 18px; flex-shrink: 0; margin: 0 0.5em; }
         .toggle-switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #CCC; transition: .4s; border-radius: 20px; }
@@ -96,7 +89,6 @@
         input:checked + .slider:before { transform: translateX(16px); }
 
         input[type="text"], select { font-family: inherit; font-size: 0.9em; padding: 0.5em; border-radius: 0.5em; border: 1px solid #ddd; }
-
         #diary-list { list-style: none; padding: 0; margin-top: 1em; }
         .diary-item { background: rgba(0,0,0,0.02); padding: 0.8em; border-radius: 0.8em; margin-bottom: 0.6em; border-left: 4px solid var(--accent-color); display: flex; justify-content: space-between; align-items: flex-start; }
     </style>
@@ -115,7 +107,7 @@
     <div id="settings-panel" style="display:none;" class="section-card">
         <h3>🛠️ 表示のカスタマイズ</h3>
         <div class="settings-grid">
-            <label>🔠 文字サイズ: <input type="range" id="font-size-slider" min="14" max="30" step="1" oninput="updateSettings()"></label>
+            <label>🔠 文字サイズ: <input type="range" id="font-size-slider" min="14" max="32" step="1" oninput="updateSettings()"></label>
             <label>🎨 部屋のトーン: 
                 <select id="theme-selector" onchange="updateSettings()">
                     <option value="warm">標準（温かな木目）</option>
@@ -124,7 +116,10 @@
                     <option value="midnight">真夜中（静寂）</option>
                 </select>
             </label>
-            <button style="background:#EEE; color:#666; font-size:0.7em;" onclick="resetToPsychDefaults()">初期の心理学データを復元する</button>
+            <div style="border-top:1px solid #ddd; margin-top:0.5em; padding-top:1em;">
+                <p style="font-size:0.75em; color:#888; margin-bottom:0.5em;">項目の復元:</p>
+                <button style="background:#888; width:100%;" onclick="resetToPsychDefaults()">心理学ベースの初期データを復元する</button>
+            </div>
         </div>
     </div>
 
@@ -140,7 +135,7 @@
 
         <div class="section-card">
             <h2>🧭 大切にしている価値観</h2>
-            <p style="font-size:0.7em; color:#999; margin-top:-0.5em;">⭐をタップして「今日のメイン」を選択</p>
+            <p style="font-size:0.7em; color:#999; margin-top:-0.5em;">⭐タップで「今日のメイン」を最上位へ</p>
             <div id="values-list"></div>
             <div style="display:flex; gap:8px; margin-top:1em;">
                 <input type="text" id="new-value" style="flex:1" placeholder="価値観を追加...">
@@ -149,7 +144,7 @@
         </div>
 
         <div class="section-card" style="border-top: 5px solid var(--spell-color);">
-            <h2>✨ 回復呪文 (嬉しいこと)</h2>
+            <h2>✨ 回復呪文 (これをされると嬉しい)</h2>
             <div id="spells-list"></div>
             <div style="display:flex; gap:8px; margin-top:1em;">
                 <input type="text" id="new-spell" style="flex:1" placeholder="嬉しいことを追加...">
@@ -172,13 +167,13 @@
 
     <div id="presentation-view">
         <div class="section-card"><h2>🧩 特徴</h2><div id="presen-habits"></div></div>
-        <div class="section-card"><h2>🧭 価値観</h2><div id="presen-values"></div></div>
+        <div class="section-card"><h2>🧭 今日のフォーカス</h2><div id="presen-values"></div></div>
         <div class="section-card" style="border:2px solid var(--spell-color);"><h2>✨ 回復呪文</h2><div id="presen-spells"></div></div>
     </div>
 </div>
 
 <script>
-    // ご提示いただいた心理学・16タイプに基づく初期データ
+    // 心理学・16タイプに基づいた初期データ
     const PSYCH_DEFAULTS = {
         habits: [
             { text: '1人の時間でエネルギーを充電する (内向傾向)', isPublic: true },
@@ -215,9 +210,9 @@
         midnight: { bg: '#1A1A1D', text: '#C5C6C7', card: '#2B2B2B', accent: '#66FCF1', spell: '#45A29E', delete: '#E07A5F', highlight: '#1F2833' }
     };
 
-    let appData = JSON.parse(localStorage.getItem('my_manual_v8')) || JSON.parse(JSON.stringify(PSYCH_DEFAULTS));
+    let appData = JSON.parse(localStorage.getItem('my_manual_v9')) || JSON.parse(JSON.stringify(PSYCH_DEFAULTS));
 
-    function save() { localStorage.setItem('my_manual_v8', JSON.stringify(appData)); }
+    function save() { localStorage.setItem('my_manual_v9', JSON.stringify(appData)); }
 
     function applyStyle() {
         const s = appData.settings;
@@ -255,7 +250,6 @@
         ['habits', 'values', 'spells'].forEach(cat => {
             const container = document.getElementById(cat + '-list');
             container.innerHTML = '';
-            // 価値観のみ、isMainを優先してソート表示
             const items = (cat === 'values') ? [...appData.values].sort((a, b) => b.isMain - a.isMain) : appData[cat];
             items.forEach((item) => {
                 const actualIndex = appData[cat].indexOf(item);
@@ -322,7 +316,7 @@
     }
 
     function resetToPsychDefaults() {
-        if(confirm("カスタム項目は保持されます。初期の心理学ベースの選択肢をリストに復元しますか？")) {
+        if(confirm("カスタム項目は保持されます。心理学ベースのデフォルト選択肢をリストに復元しますか？")) {
             ['habits', 'values', 'spells'].forEach(cat => {
                 PSYCH_DEFAULTS[cat].forEach(def => {
                     if(!appData[cat].some(item => item.text === def.text)) {
