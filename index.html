@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>私の説明書 - Professional & Empathy</title>
+    <title>私の説明書 - Professional Edition</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Kiwi+Maru:wght@400;500&display=swap" rel="stylesheet">
     
     <style>
         :root {
+            /* デフォルトテーマ（Warm Wood） */
             --bg-color: #FDFBF7;
             --text-color: #5C4B40;
             --card-bg: #FFFFFF;
@@ -17,7 +18,6 @@
             --spell-color: #E29578;
             --delete-color: #C18E8E;
             --highlight-color: #FFD166;
-            --font-size-base: 16px;
             --border-radius: 20px;
         }
 
@@ -25,73 +25,80 @@
             font-family: 'Kiwi Maru', serif;
             background-color: var(--bg-color);
             color: var(--text-color);
-            font-size: var(--font-size-base);
+            font-size: 18px; /* デフォルト値。JSで動的に変更 */
             margin: 0; padding: 0;
-            transition: all 0.3s ease;
+            transition: background-color 0.5s, color 0.5s;
         }
 
-        .container { max-width: 650px; margin: 0 auto; padding: 20px; }
+        /* ------------------------------------------
+           文字サイズ（em）ベースの設計
+           親要素（body）のfont-sizeにすべて連動します
+        ------------------------------------------ */
+        .container { max-width: 650px; margin: 0 auto; padding: 1.2em; }
+        h1 { font-size: 1.4em; color: var(--accent-color); margin: 0; }
+        h2 { font-size: 1.1em; color: var(--accent-color); margin-top: 0; margin-bottom: 0.8em; }
+        h3 { font-size: 1em; margin-top: 0; }
+        .item-text { font-size: 0.95em; line-height: 1.4; }
+        .tag { font-size: 1em; padding: 0.6em 1.2em; border-radius: 2em; display: inline-block; margin: 0.3em; }
 
         header {
             display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 25px; border-bottom: 2px dashed var(--accent-color);
-            padding-bottom: 10px;
+            margin-bottom: 1.5em; border-bottom: 2px dashed var(--accent-color);
+            padding-bottom: 0.6em;
         }
-
-        h1 { font-size: 1.4rem; margin: 0; color: var(--accent-color); }
 
         button {
             font-family: inherit; background-color: var(--accent-color); color: white;
-            border: none; padding: 10px 18px; border-radius: 25px;
-            cursor: pointer; font-size: 0.9rem; transition: 0.2s;
+            border: none; padding: 0.6em 1.2em; border-radius: 2em;
+            cursor: pointer; font-size: 0.85em; transition: 0.2s;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-
         button.outline { background: transparent; color: var(--accent-color); border: 2px solid var(--accent-color); }
         
         .section-card {
-            background: var(--card-bg); padding: 20px; border-radius: var(--border-radius);
-            margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            background: var(--card-bg); padding: 1.2em; border-radius: var(--border-radius);
+            margin-bottom: 1.2em; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
         }
-
-        .section-card h2 { font-size: 1.1rem; margin-top: 0; margin-bottom: 15px; color: var(--accent-color); }
 
         .item-row {
             display: flex; justify-content: space-between; align-items: center;
-            padding: 12px 0; border-bottom: 1px solid #f9f9f9;
+            padding: 0.8em 0; border-bottom: 1px solid rgba(0,0,0,0.03);
         }
-
         .item-row.is-main {
-            background: #FFF9EB;
-            border-left: 4px solid var(--highlight-color);
-            padding-left: 8px;
+            background: rgba(255, 209, 102, 0.15);
+            border-left: 5px solid var(--highlight-color);
+            padding-left: 0.6em;
         }
 
-        .item-text { flex-grow: 1; line-height: 1.4; padding-right: 10px; font-size: 0.95rem; }
-
-        .btn-group { display: flex; align-items: center; gap: 8px; }
-
-        .main-star { cursor: pointer; font-size: 1.2rem; filter: grayscale(1); transition: 0.2s; }
+        .main-star { cursor: pointer; font-size: 1.2em; filter: grayscale(1); transition: 0.2s; margin-right: 0.4em; }
         .main-star.active { filter: grayscale(0); transform: scale(1.2); }
 
-        .delete-btn { background: transparent; color: var(--delete-color); font-size: 1.1rem; box-shadow: none; padding: 4px; }
+        .delete-btn { background: transparent; color: var(--delete-color); font-size: 1.1em; box-shadow: none; padding: 0.2em; }
+
+        /* 設定パネル */
+        .settings-grid {
+            display: grid; gap: 1em; background: rgba(0,0,0,0.03);
+            padding: 1em; border-radius: 1em; margin-top: 0.5em;
+        }
+
+        /* 提示モード */
+        #presentation-view { display: none; text-align: center; }
+        .tag { background: rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.08); }
+        .tag.main-focus { background: var(--highlight-color); border: 2px solid var(--spell-color); font-weight: bold; transform: scale(1.1); }
+        .spell-tag { background: var(--spell-color); color: white; border: none; }
 
         /* トグルスイッチ */
-        .toggle-switch { position: relative; display: inline-block; width: 34px; height: 18px; flex-shrink: 0; }
+        .toggle-switch { position: relative; display: inline-block; width: 34px; height: 18px; flex-shrink: 0; margin: 0 0.5em; }
         .toggle-switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #E0E0E0; transition: .4s; border-radius: 20px; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #CCC; transition: .4s; border-radius: 20px; }
         .slider:before { position: absolute; content: ""; height: 12px; width: 12px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background-color: var(--accent-color); }
         input:checked + .slider:before { transform: translateX(16px); }
 
-        /* 提示モード */
-        #presentation-view { display: none; text-align: center; }
-        .tag { display: inline-block; background: #F9F6F0; padding: 10px 20px; border-radius: 25px; margin: 6px; border: 1px solid #EAE2D6; font-size: 1rem; }
-        .tag.main-focus { background: var(--highlight-color); border: 2px solid #F4A261; font-weight: bold; transform: scale(1.1); }
-        .spell-tag { background: var(--spell-color); color: white; border: none; font-weight: bold; }
+        input[type="text"], select { font-family: inherit; font-size: 0.9em; padding: 0.5em; border-radius: 0.5em; border: 1px solid #ddd; }
 
-        #diary-list { list-style: none; padding: 0; max-height: 300px; overflow-y: auto; }
-        .diary-item { background: #FDFBF7; padding: 12px; border-radius: 12px; margin-bottom: 10px; border-left: 3px solid var(--accent-color); display: flex; justify-content: space-between; }
+        #diary-list { list-style: none; padding: 0; margin-top: 1em; }
+        .diary-item { background: rgba(0,0,0,0.02); padding: 0.8em; border-radius: 0.8em; margin-bottom: 0.6em; border-left: 4px solid var(--accent-color); display: flex; justify-content: space-between; align-items: flex-start; }
     </style>
 </head>
 <body>
@@ -100,70 +107,78 @@
     <header>
         <h1>私の説明書 📖</h1>
         <div class="header-buttons">
-            <button class="outline" onclick="toggleSettings()">⚙️</button>
+            <button class="outline" onclick="toggleSettings()">⚙️ 設定</button>
             <button id="mode-switch-btn" onclick="toggleMode()">👀 提示モードへ</button>
         </div>
     </header>
 
-    <div id="settings-panel" style="display:none; text-align:right; margin-bottom:15px;">
-        <label style="font-size:0.8rem;">文字サイズ: <input type="range" id="font-size-slider" min="14" max="24" onchange="updateSettings()"></label>
+    <div id="settings-panel" style="display:none;" class="section-card">
+        <h3>🛠️ 表示のカスタマイズ</h3>
+        <div class="settings-grid">
+            <label>🔠 文字サイズ: <input type="range" id="font-size-slider" min="14" max="30" step="1" oninput="updateSettings()"></label>
+            <label>🎨 部屋のトーン: 
+                <select id="theme-selector" onchange="updateSettings()">
+                    <option value="warm">標準（温かな木目）</option>
+                    <option value="mint">ミント（清涼感）</option>
+                    <option value="sakura">サクラ（優しさ）</option>
+                    <option value="midnight">真夜中（静寂）</option>
+                </select>
+            </label>
+            <button style="background:#EEE; color:#666; font-size:0.7em;" onclick="resetToPsychDefaults()">初期の心理学データを復元する</button>
+        </div>
     </div>
 
     <div id="edit-view">
         <div class="section-card">
-            <h2>🧩 私のクセ・特徴 (心理学ベース)</h2>
+            <h2>🧩 私のクセ・特徴 (16タイプ傾向)</h2>
             <div id="habits-list"></div>
-            <div style="display:flex; gap:8px; margin-top:10px;">
-                <input type="text" id="new-habit" placeholder="自分だけのクセを追加...">
+            <div style="display:flex; gap:8px; margin-top:1em;">
+                <input type="text" id="new-habit" style="flex:1" placeholder="自分だけのクセを追加...">
                 <button onclick="addNew('habits', 'new-habit')">追加</button>
             </div>
         </div>
 
         <div class="section-card">
             <h2>🧭 大切にしている価値観</h2>
-            <p style="font-size: 0.7rem; color: #999; margin-top: -10px;">⭐タップで「今日のメイン」を選択</p>
+            <p style="font-size:0.7em; color:#999; margin-top:-0.5em;">⭐をタップして「今日のメイン」を選択</p>
             <div id="values-list"></div>
-            <div style="display:flex; gap:8px; margin-top:10px;">
-                <input type="text" id="new-value" placeholder="価値観を追加...">
+            <div style="display:flex; gap:8px; margin-top:1em;">
+                <input type="text" id="new-value" style="flex:1" placeholder="価値観を追加...">
                 <button onclick="addNew('values', 'new-value')">追加</button>
             </div>
         </div>
 
-        <div class="section-card" style="border-left: 5px solid var(--spell-color);">
-            <h2>✨ 回復呪文 (これをされると嬉しい)</h2>
+        <div class="section-card" style="border-top: 5px solid var(--spell-color);">
+            <h2>✨ 回復呪文 (嬉しいこと)</h2>
             <div id="spells-list"></div>
-            <div style="display:flex; gap:8px; margin-top:10px;">
-                <input type="text" id="new-spell" placeholder="嬉しいことを追加...">
+            <div style="display:flex; gap:8px; margin-top:1em;">
+                <input type="text" id="new-spell" style="flex:1" placeholder="嬉しいことを追加...">
                 <button style="background:var(--spell-color)" onclick="addNew('spells', 'new-spell')">追加</button>
             </div>
         </div>
 
-        <div class="section-card" style="background-color: #F4F7F9;">
+        <div class="section-card" style="background-color: rgba(0,0,0,0.02);">
             <h2>📝 心の聖域 (非公開日記)</h2>
             <div style="display:grid; gap:10px;">
-                <button onclick="startVoice()">🎤 音声で記録</button>
+                <button onclick="startVoice()" style="background:var(--spell-color)">🎤 音声で今の気持ちを記録</button>
                 <div style="display:flex; gap:8px;">
-                    <input type="text" id="diary-input" placeholder="文字で綴る...">
+                    <input type="text" id="diary-input" style="flex:1" placeholder="文字で綴る...">
                     <button onclick="addDiary()">保存</button>
                 </div>
             </div>
             <ul id="diary-list"></ul>
         </div>
-
-        <div style="text-align:center; margin-top:30px;">
-            <button style="background:#EEE; color:#888; font-size:0.7rem;" onclick="resetToPsychDefaults()">心理学ベースのデフォルトを復元</button>
-        </div>
     </div>
 
     <div id="presentation-view">
-        <div style="margin-bottom:30px;"><h2 style="color:var(--accent-color)">🧩 特徴</h2><div id="presen-habits"></div></div>
-        <div style="margin-bottom:30px;"><h2 style="color:var(--accent-color)">🧭 価値観</h2><div id="presen-values"></div></div>
-        <div style="padding:20px; border:2px solid var(--spell-color); border-radius:20px;"><h2 style="color:var(--spell-color)">✨ 回復呪文</h2><div id="presen-spells"></div></div>
+        <div class="section-card"><h2>🧩 特徴</h2><div id="presen-habits"></div></div>
+        <div class="section-card"><h2>🧭 価値観</h2><div id="presen-values"></div></div>
+        <div class="section-card" style="border:2px solid var(--spell-color);"><h2>✨ 回復呪文</h2><div id="presen-spells"></div></div>
     </div>
 </div>
 
 <script>
-    // 心理学・16タイプに基づいた初期データ
+    // ご提示いただいた心理学・16タイプに基づく初期データ
     const PSYCH_DEFAULTS = {
         habits: [
             { text: '1人の時間でエネルギーを充電する (内向傾向)', isPublic: true },
@@ -190,22 +205,49 @@
             { text: '具体的なフィードバックをくれる', isPublic: true }
         ],
         diary: [],
-        settings: { fontSize: 16 }
+        settings: { fontSize: 18, theme: 'warm' }
     };
 
-    let appData = JSON.parse(localStorage.getItem('my_manual_v6')) || JSON.parse(JSON.stringify(PSYCH_DEFAULTS));
+    const THEMES = {
+        warm: { bg: '#FDFBF7', text: '#5C4B40', card: '#FFFFFF', accent: '#D4A373', spell: '#E29578', delete: '#C18E8E', highlight: '#FFD166' },
+        mint: { bg: '#F0F7F4', text: '#2D4436', card: '#FFFFFF', accent: '#70A288', spell: '#508991', delete: '#A6808C', highlight: '#D1E8E2' },
+        sakura: { bg: '#FFF5F5', text: '#5D4141', card: '#FFFFFF', accent: '#E09F9F', spell: '#D4A5A5', delete: '#9B7E7E', highlight: '#FFD9D9' },
+        midnight: { bg: '#1A1A1D', text: '#C5C6C7', card: '#2B2B2B', accent: '#66FCF1', spell: '#45A29E', delete: '#E07A5F', highlight: '#1F2833' }
+    };
 
-    function save() { localStorage.setItem('my_manual_v6', JSON.stringify(appData)); }
+    let appData = JSON.parse(localStorage.getItem('my_manual_v8')) || JSON.parse(JSON.stringify(PSYCH_DEFAULTS));
+
+    function save() { localStorage.setItem('my_manual_v8', JSON.stringify(appData)); }
+
+    function applyStyle() {
+        const s = appData.settings;
+        document.body.style.fontSize = s.fontSize + 'px';
+        const t = THEMES[s.theme] || THEMES.warm;
+        const root = document.documentElement.style;
+        root.setProperty('--bg-color', t.bg);
+        root.setProperty('--text-color', t.text);
+        root.setProperty('--card-bg', t.card);
+        root.setProperty('--accent-color', t.accent);
+        root.setProperty('--spell-color', t.spell);
+        root.setProperty('--delete-color', t.delete);
+        root.setProperty('--highlight-color', t.highlight);
+    }
+
+    function updateSettings() {
+        appData.settings.fontSize = document.getElementById('font-size-slider').value;
+        appData.settings.theme = document.getElementById('theme-selector').value;
+        applyStyle();
+        save();
+    }
 
     function confirmAndDelete(cat, i) {
         if (confirm("今まで、ありがとう。この記録を、思い出に変えてもいいですか？")) {
-            appData[cat].splice(i, 1);
-            save(); renderAll();
+            appData[cat].splice(i, 1); save(); renderAll();
         }
     }
 
     function setMainValue(i) {
-        appData.values.forEach((v, index) => v.isMain = (index === i));
+        appData.values.forEach((v, idx) => v.isMain = (idx === i));
         save(); renderAll();
     }
 
@@ -213,60 +255,46 @@
         ['habits', 'values', 'spells'].forEach(cat => {
             const container = document.getElementById(cat + '-list');
             container.innerHTML = '';
+            // 価値観のみ、isMainを優先してソート表示
             const items = (cat === 'values') ? [...appData.values].sort((a, b) => b.isMain - a.isMain) : appData[cat];
-
             items.forEach((item) => {
                 const actualIndex = appData[cat].indexOf(item);
                 const div = document.createElement('div');
                 div.className = `item-row ${item.isMain ? 'is-main' : ''}`;
                 div.innerHTML = `
-                    ${cat === 'values' ? `<span class="main-star ${item.isMain?'active':''}" onclick="setMainValue(${actualIndex})">⭐</span>` : ''}
-                    <span class="item-text">${item.text}</span>
-                    <div class="btn-group">
+                    <div style="display:flex; align-items:center; flex:1;">
+                        ${cat === 'values' ? `<span class="main-star ${item.isMain?'active':''}" onclick="setMainValue(${actualIndex})">⭐</span>` : ''}
+                        <span class="item-text">${item.text}</span>
+                    </div>
+                    <div style="display:flex; align-items:center;">
                         <label class="toggle-switch">
                             <input type="checkbox" ${item.isPublic?'checked':''} onchange="appData.${cat}[${actualIndex}].isPublic=!appData.${cat}[${actualIndex}].isPublic; save();">
                             <span class="slider"></span>
                         </label>
                         <button class="delete-btn" onclick="confirmAndDelete('${cat}', ${actualIndex})">🗑️</button>
-                    </div>
-                `;
+                    </div>`;
                 container.appendChild(div);
             });
         });
-        renderDiary();
-    }
-
-    function renderDiary() {
         document.getElementById('diary-list').innerHTML = appData.diary.map((d, i) => `
-            <li class="diary-item">
-                <div><small style="color:#999">${d.date}</small><br>${d.text}</div>
-                <button class="delete-btn" onclick="confirmAndDelete('diary', ${i})">🗑️</button>
-            </li>`).join('');
+            <li class="diary-item"><div><small style="color:#999">${d.date}</small><br><span>${d.text}</span></div>
+            <button class="delete-btn" onclick="confirmAndDelete('diary', ${i})">🗑️</button></li>`).join('');
     }
 
     function addNew(cat, inputId) {
         const inp = document.getElementById(inputId);
-        if(inp.value.trim()){
-            appData[cat].push({ text: inp.value, isPublic: true, isMain: false });
-            inp.value = ''; save(); renderAll();
-        }
+        if(inp.value.trim()){ appData[cat].push({ text: inp.value, isPublic: true, isMain: false }); inp.value = ''; save(); renderAll(); }
     }
 
     function addDiary() {
         const inp = document.getElementById('diary-input');
-        if(inp.value.trim()){
-            appData.diary.unshift({ date: new Date().toLocaleString(), text: inp.value + " (✍️)" });
-            inp.value = ''; save(); renderAll();
-        }
+        if(inp.value.trim()){ appData.diary.unshift({ date: new Date().toLocaleString(), text: inp.value }); inp.value = ''; save(); renderAll(); }
     }
 
     function startVoice() {
         const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
         rec.lang = 'ja-JP';
-        rec.onresult = (e) => {
-            appData.diary.unshift({ date: new Date().toLocaleString(), text: e.results[0][0].transcript + " (🎙️)" });
-            save(); renderAll();
-        };
+        rec.onresult = (e) => { appData.diary.unshift({ date: new Date().toLocaleString(), text: e.results[0][0].transcript + " (🎙️)" }); save(); renderAll(); };
         rec.start();
     }
 
@@ -283,18 +311,9 @@
             const container = document.getElementById('presen-' + cat);
             const publicItems = appData[cat].filter(i => i.isPublic);
             if(cat === 'values') publicItems.sort((a,b) => b.isMain - a.isMain);
-            container.innerHTML = publicItems.map(i => 
-                `<span class="tag ${cat==='spells'?'spell-tag':''} ${i.isMain?'main-focus':''}">
-                    ${i.isMain ? '📍 ' : ''}${i.text}
-                </span>`
-            ).join('') || '<span style="color:#ccc">非公開</span>';
+            container.innerHTML = publicItems.map(i => `<span class="tag ${cat==='spells'?'spell-tag':''} ${i.isMain?'main-focus':''}">
+                ${i.isMain ? '📍 ' : ''}${i.text}</span>`).join('') || '<span style="color:#ccc">---</span>';
         });
-    }
-
-    function updateSettings() {
-        appData.settings.fontSize = document.getElementById('font-size-slider').value;
-        document.body.style.fontSize = appData.settings.fontSize + 'px';
-        save();
     }
 
     function toggleSettings() {
@@ -303,7 +322,7 @@
     }
 
     function resetToPsychDefaults() {
-        if(confirm("カスタム項目は保持されます。心理学ベースのデフォルト選択肢をリストに復元しますか？")) {
+        if(confirm("カスタム項目は保持されます。初期の心理学ベースの選択肢をリストに復元しますか？")) {
             ['habits', 'values', 'spells'].forEach(cat => {
                 PSYCH_DEFAULTS[cat].forEach(def => {
                     if(!appData[cat].some(item => item.text === def.text)) {
@@ -316,9 +335,9 @@
     }
 
     window.onload = () => {
-        document.getElementById('font-size-slider').value = appData.settings.fontSize || 16;
-        document.body.style.fontSize = (appData.settings.fontSize || 16) + 'px';
-        renderAll();
+        document.getElementById('font-size-slider').value = appData.settings.fontSize;
+        document.getElementById('theme-selector').value = appData.settings.theme;
+        applyStyle(); renderAll();
     };
 </script>
 </body>
