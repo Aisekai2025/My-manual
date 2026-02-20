@@ -11,11 +11,11 @@
     <style>
         /* --- 変数定義（パーソナライズ用） --- */
         :root {
-            --bg-color: #FDFBF7; /* 温かみのあるベージュ系背景 */
+            --bg-color: #FDFBF7;
             --text-color: #5C4B40;
             --card-bg: #FFFFFF;
-            --accent-color: #D4A373; /* 落ち着いたオレンジ/ブラウン系 */
-            --spell-color: #E29578; /* 回復呪文用の少し目立つ色 */
+            --accent-color: #D4A373;
+            --spell-color: #E29578;
             --font-size-base: 16px;
             --border-radius: 16px;
         }
@@ -58,7 +58,7 @@
             gap: 10px;
         }
 
-        /* --- ボタン共通スタイル --- */
+        /* --- ボタン・入力フォーム共通スタイル --- */
         button {
             font-family: inherit;
             background-color: var(--accent-color);
@@ -83,6 +83,35 @@
             border: 2px solid var(--accent-color);
         }
 
+        input[type="text"] {
+            font-family: inherit;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+            flex-grow: 1;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--accent-color);
+        }
+
+        /* --- 追加フォーム --- */
+        .add-item-form {
+            display: flex;
+            gap: 8px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px dashed #eee;
+        }
+
+        .add-item-form button {
+            padding: 8px 12px;
+            white-space: nowrap;
+        }
+
         /* --- 設定パネル --- */
         #settings-panel {
             background-color: var(--card-bg);
@@ -90,17 +119,11 @@
             border-radius: var(--border-radius);
             margin-bottom: 20px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            display: none; /* 初期非表示 */
+            display: none;
         }
         
         .setting-item {
             margin-bottom: 10px;
-        }
-
-        .setting-item label {
-            display: block;
-            margin-bottom: 5px;
-            font-size: 0.9rem;
         }
 
         /* --- カードセクション --- */
@@ -127,11 +150,7 @@
             justify-content: space-between;
             align-items: center;
             padding: 10px 0;
-            border-bottom: 1px solid #eee;
-        }
-
-        .item-row:last-child {
-            border-bottom: none;
+            border-bottom: 1px solid #f5f5f5;
         }
 
         .toggle-switch {
@@ -139,6 +158,7 @@
             display: inline-block;
             width: 44px;
             height: 24px;
+            flex-shrink: 0;
         }
 
         .toggle-switch input {
@@ -176,14 +196,31 @@
             transform: translateX(20px);
         }
 
-        /* 提示モードアイコン（ラベル） */
         .public-label {
             font-size: 0.8rem;
             color: #888;
             margin-right: 8px;
         }
 
-        /* --- 音声入力日記 --- */
+        .item-text {
+            flex-grow: 1;
+            padding-right: 10px;
+            line-height: 1.4;
+        }
+
+        /* --- 日記入力エリア --- */
+        .diary-inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .diary-text-row {
+            display: flex;
+            gap: 8px;
+        }
+
         #diary-list {
             list-style: none;
             padding: 0;
@@ -198,7 +235,7 @@
             border-radius: 8px;
             margin-bottom: 8px;
             font-size: 0.9rem;
-            position: relative;
+            line-height: 1.5;
         }
         
         .diary-date {
@@ -209,9 +246,8 @@
         }
 
         #record-btn {
-            width: 100%;
             background-color: #E29578;
-            margin-bottom: 15px;
+            width: 100%;
         }
         
         #record-btn.recording {
@@ -227,7 +263,7 @@
 
         /* --- 提示モード（プレゼンテーション） --- */
         #presentation-view {
-            display: none; /* 初期非表示 */
+            display: none;
         }
 
         .presentation-card {
@@ -261,9 +297,9 @@
             border-radius: 20px;
             font-size: 1rem;
             border: 1px solid #EAE2D6;
+            line-height: 1.4;
         }
 
-        /* 回復呪文の特別スタイル */
         .spell-card {
             border: 2px solid var(--spell-color);
             background-color: #FFF9F7;
@@ -280,7 +316,6 @@
             border: none;
             font-weight: bold;
         }
-
     </style>
 </head>
 <body>
@@ -308,321 +343,40 @@
     <div id="edit-view">
         <p style="font-size: 0.9rem; color: #888;">
             ※相手に見せたい項目だけスイッチをONにしてください。<br>
-            ※データはあなたの端末内にのみ安全に保存されます。
+            ※リストにないものは「追加」から自由に作成できます。
         </p>
 
         <div class="section-card">
             <h2>🧩 私のクセ・特徴</h2>
             <div id="habits-list"></div>
+            <div class="add-item-form">
+                <input type="text" id="new-habit" placeholder="例：マルチタスクが苦手 など...">
+                <button onclick="addNewItem('habits', 'new-habit')">追加</button>
+            </div>
         </div>
 
         <div class="section-card">
             <h2>🧭 大切にしている価値観</h2>
             <div id="values-list"></div>
+            <div class="add-item-form">
+                <input type="text" id="new-value" placeholder="例：誠実さ、自由 など...">
+                <button onclick="addNewItem('values', 'new-value')">追加</button>
+            </div>
         </div>
 
         <div class="section-card" style="border-left: 4px solid var(--spell-color);">
             <h2>✨ 回復呪文 (取扱注意)</h2>
             <p style="font-size: 0.8rem; margin-top: -10px;">これをされると嬉しい・機嫌が直るリスト</p>
             <div id="spells-list"></div>
+            <div class="add-item-form">
+                <input type="text" id="new-spell" placeholder="例：温かいお茶を淹れてくれると嬉しい">
+                <button style="background-color: var(--spell-color);" onclick="addNewItem('spells', 'new-spell')">追加</button>
+            </div>
         </div>
 
         <div class="section-card" style="background-color: #F0F4F8;">
-            <h2>🎙️ 心の聖域 (音声日記)</h2>
+            <h2>📝 心の聖域 (非公開日記)</h2>
             <p style="font-size: 0.8rem; margin-top: -10px;">※この領域は提示モードでは絶対に表示されません。</p>
-            <button id="record-btn" onclick="toggleRecording()">🎤 タップして録音開始</button>
-            <ul id="diary-list"></ul>
-        </div>
-    </div>
-
-    <div id="presentation-view">
-        <p style="text-align: center; color: #888; font-size: 0.9rem;">
-            はじめまして。円滑なコミュニケーションのため、<br>私の特徴をまとめました。
-        </p>
-        
-        <div class="presentation-card">
-            <h2>🧩 私のクセ・特徴</h2>
-            <div class="presentation-tags" id="presen-habits"></div>
-        </div>
-
-        <div class="presentation-card">
-            <h2>🧭 大切にしている価値観</h2>
-            <div class="presentation-tags" id="presen-values"></div>
-        </div>
-
-        <div class="presentation-card spell-card">
-            <h2>✨ 私の回復呪文</h2>
-            <div class="presentation-tags" id="presen-spells"></div>
-        </div>
-    </div>
-
-</div>
-
-<script>
-    /* --- データ構造と初期化 --- */
-    // プリセットデータ
-    const defaultData = {
-        habits: [
-            { id: 'h1', text: '回避傾向がある', isPublic: false },
-            { id: 'h2', text: '完璧主義になりがち', isPublic: false },
-            { id: 'h3', text: 'マルチタスクが苦手', isPublic: true },
-            { id: 'h4', text: '音や光に少し敏感 (感覚過敏)', isPublic: false },
-            { id: 'h5', text: '過集中・没頭型', isPublic: true }
-        ],
-        values: [
-            { id: 'v1', text: '誠実さ', isPublic: true },
-            { id: 'v2', text: '知的好奇心', isPublic: true },
-            { id: 'v3', text: '他者への貢献', isPublic: false },
-            { id: 'v4', text: '自律と自由', isPublic: true },
-            { id: 'v5', text: '心の平穏', isPublic: true }
-        ],
-        spells: [
-            { id: 's1', text: '「休んでいいよ」の一言', isPublic: true },
-            { id: 's2', text: '温かい飲み物の差し入れ', isPublic: true },
-            { id: 's3', text: '1人の時間をくれること', isPublic: false }
-        ],
-        diary: [],
-        settings: {
-            fontSize: 16,
-            bgColor: '#FDFBF7'
-        }
-    };
-
-    let appData = {};
-
-    // LocalStorageからデータを読み込む
-    function loadData() {
-        const savedData = localStorage.getItem('my_manual_data');
-        if (savedData) {
-            appData = JSON.parse(savedData);
-        } else {
-            appData = JSON.parse(JSON.stringify(defaultData));
-        }
-        applySettings();
-        renderEditView();
-        renderDiary();
-    }
-
-    // LocalStorageへデータを保存する
-    function saveData() {
-        localStorage.setItem('my_manual_data', JSON.stringify(appData));
-    }
-
-    /* --- UI描画 (編集モード) --- */
-    function renderList(containerId, category) {
-        const container = document.getElementById(containerId);
-        container.innerHTML = '';
-        
-        appData[category].forEach((item, index) => {
-            const row = document.createElement('div');
-            row.className = 'item-row';
             
-            const textSpan = document.createElement('span');
-            textSpan.textContent = item.text;
-            
-            const rightDiv = document.createElement('div');
-            rightDiv.style.display = 'flex';
-            rightDiv.style.alignItems = 'center';
-
-            const label = document.createElement('span');
-            label.className = 'public-label';
-            label.textContent = '提示する';
-
-            const labelNode = document.createElement('label');
-            labelNode.className = 'toggle-switch';
-            
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.checked = item.isPublic;
-            checkbox.onchange = (e) => {
-                appData[category][index].isPublic = e.target.checked;
-                saveData();
-            };
-
-            const slider = document.createElement('span');
-            slider.className = 'slider';
-
-            labelNode.appendChild(checkbox);
-            labelNode.appendChild(slider);
-            
-            rightDiv.appendChild(label);
-            rightDiv.appendChild(labelNode);
-
-            row.appendChild(textSpan);
-            row.appendChild(rightDiv);
-            container.appendChild(row);
-        });
-    }
-
-    function renderEditView() {
-        renderList('habits-list', 'habits');
-        renderList('values-list', 'values');
-        renderList('spells-list', 'spells');
-    }
-
-    /* --- 設定パネル関連 --- */
-    function toggleSettings() {
-        const panel = document.getElementById('settings-panel');
-        panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
-    }
-
-    function applySettings() {
-        document.documentElement.style.setProperty('--font-size-base', appData.settings.fontSize + 'px');
-        document.documentElement.style.setProperty('--bg-color', appData.settings.bgColor);
-        document.getElementById('font-size-slider').value = appData.settings.fontSize;
-        document.getElementById('bg-color-picker').value = appData.settings.bgColor;
-    }
-
-    function updateSettings() {
-        const fontSize = document.getElementById('font-size-slider').value;
-        const bgColor = document.getElementById('bg-color-picker').value;
-        
-        appData.settings.fontSize = fontSize;
-        appData.settings.bgColor = bgColor;
-        
-        applySettings();
-        saveData();
-    }
-
-    /* --- モード切替 (提示モード) --- */
-    let isPresentationMode = false;
-
-    function toggleMode() {
-        isPresentationMode = !isPresentationMode;
-        
-        const editView = document.getElementById('edit-view');
-        const presenView = document.getElementById('presentation-view');
-        const modeBtn = document.getElementById('mode-switch-btn');
-        const settingsBtn = document.getElementById('toggle-settings-btn');
-        const settingsPanel = document.getElementById('settings-panel');
-        
-        if (isPresentationMode) {
-            // 提示モードへ移行
-            editView.style.display = 'none';
-            settingsBtn.style.display = 'none';
-            settingsPanel.style.display = 'none';
-            presenView.style.display = 'block';
-            modeBtn.innerHTML = '🔙 編集モードへ戻る';
-            modeBtn.classList.add('outline');
-            renderPresentationView();
-        } else {
-            // 編集モードへ戻る
-            editView.style.display = 'block';
-            settingsBtn.style.display = 'inline-block';
-            presenView.style.display = 'none';
-            modeBtn.innerHTML = '👀 提示モードへ';
-            modeBtn.classList.remove('outline');
-        }
-    }
-
-    function renderTags(containerId, category, tagClass) {
-        const container = document.getElementById(containerId);
-        container.innerHTML = '';
-        
-        // isPublic が true のものだけ抽出
-        const publicItems = appData[category].filter(item => item.isPublic);
-        
-        if (publicItems.length === 0) {
-            container.innerHTML = '<span style="color:#aaa; font-size:0.9rem;">(非公開)</span>';
-            return;
-        }
-
-        publicItems.forEach(item => {
-            const span = document.createElement('span');
-            span.className = `tag ${tagClass}`;
-            span.textContent = item.text;
-            container.appendChild(span);
-        });
-    }
-
-    function renderPresentationView() {
-        renderTags('presen-habits', 'habits', '');
-        renderTags('presen-values', 'values', '');
-        renderTags('presen-spells', 'spells', 'spell-tag'); // 回復呪文は特別スタイル
-    }
-
-    /* --- 音声入力日記 (Web Speech API) --- */
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    let recognition;
-    let isRecording = false;
-
-    if (SpeechRecognition) {
-        recognition = new SpeechRecognition();
-        recognition.lang = 'ja-JP';
-        recognition.continuous = true;
-        recognition.interimResults = false;
-
-        recognition.onresult = (event) => {
-            const transcript = event.results[event.results.length - 1][0].transcript;
-            addDiaryEntry(transcript);
-        };
-
-        recognition.onerror = (event) => {
-            console.error('Speech recognition error:', event.error);
-            alert('音声認識エラーが発生しました: ' + event.error);
-            stopRecording();
-        };
-    }
-
-    function toggleRecording() {
-        if (!SpeechRecognition) {
-            alert('お使いのブラウザは音声入力に対応していません。(ChromeやSafariの最新版をご利用ください)');
-            return;
-        }
-
-        const btn = document.getElementById('record-btn');
-        
-        if (isRecording) {
-            stopRecording();
-        } else {
-            startRecording();
-        }
-    }
-
-    function startRecording() {
-        recognition.start();
-        isRecording = true;
-        const btn = document.getElementById('record-btn');
-        btn.innerHTML = '⏹️ 録音を停止する';
-        btn.classList.add('recording');
-    }
-
-    function stopRecording() {
-        recognition.stop();
-        isRecording = false;
-        const btn = document.getElementById('record-btn');
-        btn.innerHTML = '🎤 タップして録音開始';
-        btn.classList.remove('recording');
-    }
-
-    function addDiaryEntry(text) {
-        const now = new Date();
-        const dateStr = `${now.getMonth()+1}/${now.getDate()} ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
-        
-        appData.diary.unshift({ date: dateStr, text: text }); // 先頭に追加
-        saveData();
-        renderDiary();
-    }
-
-    function renderDiary() {
-        const list = document.getElementById('diary-list');
-        list.innerHTML = '';
-        
-        appData.diary.forEach(entry => {
-            const li = document.createElement('li');
-            const dateSpan = document.createElement('span');
-            dateSpan.className = 'diary-date';
-            dateSpan.textContent = entry.date;
-            
-            li.appendChild(dateSpan);
-            li.appendChild(document.createTextNode(entry.text));
-            list.appendChild(li);
-        });
-    }
-
-    // 初期起動
-    window.onload = loadData;
-
-</script>
-</body>
-</html>
+            <div class="diary-inputs">
+                <button id="record-btn" onclick="
