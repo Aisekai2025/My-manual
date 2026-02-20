@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>私の説明書</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kiwi+Maru:wght@400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- 変数定義（パーソナライズ用） --- */
+        :root {
+            --bg-color: #FDFBF7; /* 温かみのあるベージュ系背景 */
+            --text-color: #5C4B40;
+            --card-bg: #FFFFFF;
+            --accent-color: #D4A373; /* 落ち着いたオレンジ/ブラウン系 */
+            --spell-color: #E29578; /* 回復呪文用の少し目立つ色 */
+            --font-size-base: 16px;
+            --border-radius: 16px;
+        }
+
+        /* --- ベーススタイル --- */
+        body {
+            font-family: 'Kiwi Maru', serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-size: var(--font-size-base);
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.3s, font-size 0.3s;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* --- ヘッダー --- */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px dashed var(--accent-color);
+            padding-bottom: 10px;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin: 0;
+            color: var(--accent-color);
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* --- ボタン共通スタイル --- */
+        button {
+            font-family: inherit;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: opacity 0.2s, transform 0.1s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        button:active {
+            transform: translateY(2px);
+            box-shadow: none;
+        }
+
+        button.outline {
+            background-color: transparent;
+            color: var(--accent-color);
+            border: 2px solid var(--accent-color);
+        }
+
+        /* --- 設定パネル --- */
+        #settings-panel {
+            background-color: var(--card-bg);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            display: none; /* 初期非表示 */
+        }
+        
+        .setting-item {
+            margin-bottom: 10px;
+        }
+
+        .setting-item label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        /* --- カードセクション --- */
+        .section-card {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        .section-card h2 {
+            font-size: 1.2rem;
+            margin-top: 0;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* --- リスト項目とトグルスイッチ --- */
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .item-row:last-child {
+            border-bottom: none;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--accent-color);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+
+        /* 提示モードアイコン（ラベル） */
+        .public-label {
+            font-size: 0.8rem;
+            color: #888;
+            margin-right: 8px;
+        }
+
+        /* --- 音声入力日記 --- */
+        #diary-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        #diary-list li {
+            background-color: #F9F6F0;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            position: relative;
+        }
+        
+        .diary-date {
+            font-size: 0.7rem;
+            color: #999;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        #record-btn {
+            width: 100%;
+            background-color: #E29578;
+            margin-bottom: 15px;
+        }
+        
+        #record-btn.recording {
+            background-color: #D62828;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        /* --- 提示モード（プレゼンテーション） --- */
+        #presentation-view {
+            display: none; /* 初期非表示 */
+        }
+
+        .presentation-card {
+            background-color: var(--card-bg);
+            padding: 25px;
+            border-radius: 24px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .presentation-card h2 {
+            color: var(--accent-color);
+            border-bottom: 2px solid var(--accent-color);
+            display: inline-block;
+            padding-bottom: 5px;
+            margin-bottom: 20px;
+        }
+
+        .presentation-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .tag {
+            background-color: #F9F6F0;
+            color: var(--text-color);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 1rem;
+            border: 1px solid #EAE2D6;
+        }
+
+        /* 回復呪文の特別スタイル */
+        .spell-card {
+            border: 2px solid var(--spell-color);
+            background-color: #FFF9F7;
+        }
+        
+        .spell-card h2 {
+            color: var(--spell-color);
+            border-color: var(--spell-color);
+        }
+
+        .spell-tag {
+            background-color: var(--spell-color);
+            color: white;
+            border: none;
+            font-weight: bold;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1 id="app-title">私の説明書 📖</h1>
+        <div class="header-buttons">
+            <button id="toggle-settings-btn" class="outline" onclick="toggleSettings()">⚙️ 設定</button>
+            <button id="mode-switch-btn" onclick="toggleMode()">👀 提示モードへ</button>
+        </div>
+    </header>
+
+    <div id="settings-panel">
+        <div class="setting-item">
+            <label for="font-size-slider">文字の大きさ</label>
+            <input type="range" id="font-size-slider" min="12" max="24" value="16" onchange="updateSettings()">
+        </div>
+        <div class="setting-item">
+            <label for="bg-color-picker">背景色</label>
+            <input type="color" id="bg-color-picker" value="#FDFBF7" onchange="updateSettings()">
+        </div>
+    </div>
+
+    <div id="edit-view">
+        <p style="font-size: 0.9rem; color: #888;">
+            ※相手に見せたい項目だけスイッチをONにしてください。<br>
+            ※データはあなたの端末内にのみ安全に保存されます。
+        </p>
+
+        <div class="section-card">
+            <h2>🧩 私のクセ・特徴</h2>
+            <div id="habits-list"></div>
+        </div>
+
+        <div class="section-card">
+            <h2>🧭 大切にしている価値観</h2>
+            <div id="values-list"></div>
+        </div>
+
+        <div class="section-card" style="border-left: 4px solid var(--spell-color);">
+            <h2>✨ 回復呪文 (取扱注意)</h2>
+            <p style="font-size: 0.8rem; margin-top: -10px;">これをされると嬉しい・機嫌が直るリスト</p>
+            <div id="spells-list"></div>
+        </div>
+
+        <div class="section-card" style="background-color: #F0F4F8;">
+            <h2>🎙️ 心の聖域 (音声日記)</h2>
+            <p style="font-size: 0.8rem; margin-top: -10px;">※この領域は提示モードでは絶対に表示されません。</p>
+            <button id="record-btn" onclick="toggleRecording()">🎤 タップして録音開始</button>
+            <ul id="diary-list"></ul>
+        </div>
+    </div>
+
+    <div id="presentation-view">
+        <p style="text-align: center; color: #888; font-size: 0.9rem;">
+            はじめまして。円滑なコミュニケーションのため、<br>私の特徴をまとめました。
+        </p>
+        
+        <div class="presentation-card">
+            <h2>🧩 私のクセ・特徴</h2>
+            <div class="presentation-tags" id="presen-habits"></div>
+        </div>
+
+        <div class="presentation-card">
+            <h2>🧭 大切にしている価値観</h2>
+            <div class="presentation-tags" id="presen-values"></div>
+        </div>
+
+        <div class="presentation-card spell-card">
+            <h2>✨ 私の回復呪文</h2>
+            <div class="presentation-tags" id="presen-spells"></div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    /* --- データ構造と初期化 --- */
+    // プリセットデータ
+    const defaultData = {
+        habits: [
+            { id: 'h1', text: '回避傾向がある', isPublic: false },
+            { id: 'h2', text: '完璧主義になりがち', isPublic: false },
+            { id: 'h3', text: 'マルチタスクが苦手', isPublic: true },
+            { id: 'h4', text: '音や光に少し敏感 (感覚過敏)', isPublic: false },
+            { id: 'h5', text: '過集中・没頭型', isPublic: true }
+        ],
+        values: [
+            { id: 'v1', text: '誠実さ', isPublic: true },
+            { id: 'v2', text: '知的好奇心', isPublic: true },
+            { id: 'v3', text: '他者への貢献', isPublic: false },
+            { id: 'v4', text: '自律と自由', isPublic: true },
+            { id: 'v5', text: '心の平穏', isPublic: true }
+        ],
+        spells: [
+            { id: 's1', text: '「休んでいいよ」の一言', isPublic: true },
+            { id: 's2', text: '温かい飲み物の差し入れ', isPublic: true },
+            { id: 's3', text: '1人の時間をくれること', isPublic: false }
+        ],
+        diary: [],
+        settings: {
+            fontSize: 16,
+            bgColor: '#FDFBF7'
+        }
+    };
+
+    let appData = {};
+
+    // LocalStorageからデータを読み込む
+    function loadData() {
+        const savedData = localStorage.getItem('my_manual_data');
+        if (savedData) {
+            appData = JSON.parse(savedData);
+        } else {
+            appData = JSON.parse(JSON.stringify(defaultData));
+        }
+        applySettings();
+        renderEditView();
+        renderDiary();
+    }
+
+    // LocalStorageへデータを保存する
+    function saveData() {
+        localStorage.setItem('my_manual_data', JSON.stringify(appData));
+    }
+
+    /* --- UI描画 (編集モード) --- */
+    function renderList(containerId, category) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = '';
+        
+        appData[category].forEach((item, index) => {
+            const row = document.createElement('div');
+            row.className = 'item-row';
+            
+            const textSpan = document.createElement('span');
+            textSpan.textContent = item.text;
+            
+            const rightDiv = document.createElement('div');
+            rightDiv.style.display = 'flex';
+            rightDiv.style.alignItems = 'center';
+
+            const label = document.createElement('span');
+            label.className = 'public-label';
+            label.textContent = '提示する';
+
+            const labelNode = document.createElement('label');
+            labelNode.className = 'toggle-switch';
+            
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.checked = item.isPublic;
+            checkbox.onchange = (e) => {
+                appData[category][index].isPublic = e.target.checked;
+                saveData();
+            };
+
+            const slider = document.createElement('span');
+            slider.className = 'slider';
+
+            labelNode.appendChild(checkbox);
+            labelNode.appendChild(slider);
+            
+            rightDiv.appendChild(label);
+            rightDiv.appendChild(labelNode);
+
+            row.appendChild(textSpan);
+            row.appendChild(rightDiv);
+            container.appendChild(row);
+        });
+    }
+
+    function renderEditView() {
+        renderList('habits-list', 'habits');
+        renderList('values-list', 'values');
+        renderList('spells-list', 'spells');
+    }
+
+    /* --- 設定パネル関連 --- */
+    function toggleSettings() {
+        const panel = document.getElementById('settings-panel');
+        panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function applySettings() {
+        document.documentElement.style.setProperty('--font-size-base', appData.settings.fontSize + 'px');
+        document.documentElement.style.setProperty('--bg-color', appData.settings.bgColor);
+        document.getElementById('font-size-slider').value = appData.settings.fontSize;
+        document.getElementById('bg-color-picker').value = appData.settings.bgColor;
+    }
+
+    function updateSettings() {
+        const fontSize = document.getElementById('font-size-slider').value;
+        const bgColor = document.getElementById('bg-color-picker').value;
+        
+        appData.settings.fontSize = fontSize;
+        appData.settings.bgColor = bgColor;
+        
+        applySettings();
+        saveData();
+    }
+
+    /* --- モード切替 (提示モード) --- */
+    let isPresentationMode = false;
+
+    function toggleMode() {
+        isPresentationMode = !isPresentationMode;
+        
+        const editView = document.getElementById('edit-view');
+        const presenView = document.getElementById('presentation-view');
+        const modeBtn = document.getElementById('mode-switch-btn');
+        const settingsBtn = document.getElementById('toggle-settings-btn');
+        const settingsPanel = document.getElementById('settings-panel');
+        
+        if (isPresentationMode) {
+            // 提示モードへ移行
+            editView.style.display = 'none';
+            settingsBtn.style.display = 'none';
+            settingsPanel.style.display = 'none';
+            presenView.style.display = 'block';
+            modeBtn.innerHTML = '🔙 編集モードへ戻る';
+            modeBtn.classList.add('outline');
+            renderPresentationView();
+        } else {
+            // 編集モードへ戻る
+            editView.style.display = 'block';
+            settingsBtn.style.display = 'inline-block';
+            presenView.style.display = 'none';
+            modeBtn.innerHTML = '👀 提示モードへ';
+            modeBtn.classList.remove('outline');
+        }
+    }
+
+    function renderTags(containerId, category, tagClass) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = '';
+        
+        // isPublic が true のものだけ抽出
+        const publicItems = appData[category].filter(item => item.isPublic);
+        
+        if (publicItems.length === 0) {
+            container.innerHTML = '<span style="color:#aaa; font-size:0.9rem;">(非公開)</span>';
+            return;
+        }
+
+        publicItems.forEach(item => {
+            const span = document.createElement('span');
+            span.className = `tag ${tagClass}`;
+            span.textContent = item.text;
+            container.appendChild(span);
+        });
+    }
+
+    function renderPresentationView() {
+        renderTags('presen-habits', 'habits', '');
+        renderTags('presen-values', 'values', '');
+        renderTags('presen-spells', 'spells', 'spell-tag'); // 回復呪文は特別スタイル
+    }
+
+    /* --- 音声入力日記 (Web Speech API) --- */
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition;
+    let isRecording = false;
+
+    if (SpeechRecognition) {
+        recognition = new SpeechRecognition();
+        recognition.lang = 'ja-JP';
+        recognition.continuous = true;
+        recognition.interimResults = false;
+
+        recognition.onresult = (event) => {
+            const transcript = event.results[event.results.length - 1][0].transcript;
+            addDiaryEntry(transcript);
+        };
+
+        recognition.onerror = (event) => {
+            console.error('Speech recognition error:', event.error);
+            alert('音声認識エラーが発生しました: ' + event.error);
+            stopRecording();
+        };
+    }
+
+    function toggleRecording() {
+        if (!SpeechRecognition) {
+            alert('お使いのブラウザは音声入力に対応していません。(ChromeやSafariの最新版をご利用ください)');
+            return;
+        }
+
+        const btn = document.getElementById('record-btn');
+        
+        if (isRecording) {
+            stopRecording();
+        } else {
+            startRecording();
+        }
+    }
+
+    function startRecording() {
+        recognition.start();
+        isRecording = true;
+        const btn = document.getElementById('record-btn');
+        btn.innerHTML = '⏹️ 録音を停止する';
+        btn.classList.add('recording');
+    }
+
+    function stopRecording() {
+        recognition.stop();
+        isRecording = false;
+        const btn = document.getElementById('record-btn');
+        btn.innerHTML = '🎤 タップして録音開始';
+        btn.classList.remove('recording');
+    }
+
+    function addDiaryEntry(text) {
+        const now = new Date();
+        const dateStr = `${now.getMonth()+1}/${now.getDate()} ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
+        
+        appData.diary.unshift({ date: dateStr, text: text }); // 先頭に追加
+        saveData();
+        renderDiary();
+    }
+
+    function renderDiary() {
+        const list = document.getElementById('diary-list');
+        list.innerHTML = '';
+        
+        appData.diary.forEach(entry => {
+            const li = document.createElement('li');
+            const dateSpan = document.createElement('span');
+            dateSpan.className = 'diary-date';
+            dateSpan.textContent = entry.date;
+            
+            li.appendChild(dateSpan);
+            li.appendChild(document.createTextNode(entry.text));
+            list.appendChild(li);
+        });
+    }
+
+    // 初期起動
+    window.onload = loadData;
+
+</script>
+</body>
+</html>
