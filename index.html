@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>私の説明書 - Color Palette Edition</title>
+    <title>私の説明書 - Your Own Color</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Kiwi+Maru:wght@400;500&display=swap" rel="stylesheet">
@@ -85,6 +85,12 @@
         }
         .color-chip:hover { transform: scale(1.1); }
         .color-chip.active { border-color: var(--text-color); transform: scale(1.15); box-shadow: 0 0 8px rgba(0,0,0,0.2); }
+        
+        /* カスタムチップ専用のスタイル */
+        .custom-chip {
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-weight: bold; font-size: 1.2em; text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+        }
 
         #presentation-view { display: none; text-align: center; }
         .tag { background: rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.08); }
@@ -98,12 +104,14 @@
         input:checked + .slider { background-color: var(--accent-color); }
         input:checked + .slider:before { transform: translateX(16px); }
 
-        input[type="text"], select { font-family: inherit; font-size: 0.9em; padding: 0.5em; border-radius: 0.5em; border: 1px solid #ddd; }
+        input[type="text"] { font-family: inherit; font-size: 0.9em; padding: 0.5em; border-radius: 0.5em; border: 1px solid #ddd; }
         #diary-list { list-style: none; padding: 0; margin-top: 1em; }
         .diary-item { background: rgba(0,0,0,0.02); padding: 0.8em; border-radius: 0.8em; margin-bottom: 0.6em; border-left: 4px solid var(--accent-color); display: flex; justify-content: space-between; align-items: flex-start; }
     </style>
 </head>
 <body>
+
+<input type="color" id="custom-color-input" style="display:none;" onchange="handleCustomColorChange(event)">
 
 <div class="container">
     <header>
@@ -120,7 +128,7 @@
             <label>🔠 文字サイズ: <input type="range" id="font-size-slider" min="14" max="32" step="1" oninput="updateFontSize()"></label>
             
             <div>
-                <div style="font-weight: 500;">🎨 部屋のトーン: <span id="current-theme-name" style="color:var(--accent-color); font-weight:bold;">温かな木目</span></div>
+                <div style="font-weight: 500;">🎨 部屋のトーン: <span id="current-theme-name" style="color:var(--accent-color); font-weight:bold;">深呼吸の緑</span></div>
                 <div class="color-palette" id="color-palette-container">
                     </div>
             </div>
@@ -208,7 +216,7 @@
             { text: '具体的なフィードバックをくれる', isPublic: true }
         ],
         diary: [],
-        settings: { fontSize: 18, theme: 'deepgreen' } // 初期を深呼吸の緑に
+        settings: { fontSize: 18, theme: 'deepgreen', customTheme: null }
     };
 
     // 12色のテーマパレット
@@ -227,31 +235,71 @@
         stardust: { name: '星屑のネイビー', bg: '#0B132B', text: '#EBEBEB', card: '#1C2541', accent: '#5BC0BE', spell: '#3A506B', delete: '#8892B0', highlight: '#1A2A40', chip: '#1C2541' }
     };
 
-    let appData = JSON.parse(localStorage.getItem('my_manual_v10')) || JSON.parse(JSON.stringify(PSYCH_DEFAULTS));
+    let appData = JSON.parse(localStorage.getItem('my_manual_v11')) || JSON.parse(JSON.stringify(PSYCH_DEFAULTS));
 
-    function save() { localStorage.setItem('my_manual_v10', JSON.stringify(appData)); }
+    function save() { localStorage.setItem('my_manual_v11', JSON.stringify(appData)); }
 
-    // カラーチップを画面に生成する
+    // カラーチップの生成（カスタムパレット対応）
     function renderColorChips() {
         const container = document.getElementById('color-palette-container');
         container.innerHTML = '';
+        
+        // 既存の12色
         Object.keys(THEMES).forEach(key => {
             const theme = THEMES[key];
             const chip = document.createElement('div');
             chip.className = `color-chip ${appData.settings.theme === key ? 'active' : ''}`;
             chip.style.backgroundColor = theme.chip;
-            chip.title = theme.name; // ホバー時に名前が出るように
+            chip.title = theme.name;
             chip.onclick = () => selectTheme(key);
             container.appendChild(chip);
         });
+
+        // カスタムカラーボタン
+        const customChip = document.createElement('div');
+        customChip.className = `color-chip custom-chip ${appData.settings.theme === 'custom' ? 'active' : ''}`;
+        
+        if (appData.settings.customTheme) {
+            // すでにカスタムカラーが設定されている場合
+            customChip.style.backgroundColor = appData.settings.customTheme.hex;
+            customChip.title = appData.settings.customTheme.name;
+            customChip.innerHTML = '✨';
+        } else {
+            // まだ設定されていない場合
+            customChip.style.background = 'conic-gradient(from 0deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)';
+            customChip.title = '自分だけの色を作る';
+            customChip.innerHTML = '＋';
+        }
+        
+        customChip.onclick = () => document.getElementById('custom-color-input').click();
+        container.appendChild(customChip);
     }
 
-    // テーマを選択して適用する
+    // カスタムカラーが選択された時の処理
+    function handleCustomColorChange(e) {
+        const hex = e.target.value;
+        const defaultName = appData.settings.customTheme ? appData.settings.customTheme.name : "私のオリジナルカラー";
+        
+        // 色の名前を尋ねる
+        const name = prompt("この色に名前をつけてください✨\n（例：お気に入りのマグカップ、がんばった日の赤 など）", defaultName);
+        
+        if (name !== null) { // キャンセルされなかった場合
+            appData.settings.customTheme = { 
+                hex: hex, 
+                name: name.trim() || "名もなき色" 
+            };
+            appData.settings.theme = 'custom';
+            applyStyle();
+            save();
+            renderColorChips();
+        }
+    }
+
     function selectTheme(key) {
         appData.settings.theme = key;
         applyStyle();
         save();
-        renderColorChips(); // チップの選択状態(枠線)を更新
+        renderColorChips();
     }
 
     function updateFontSize() {
@@ -263,12 +311,30 @@
     function applyStyle() {
         const s = appData.settings;
         document.body.style.fontSize = s.fontSize + 'px';
-        const t = THEMES[s.theme] || THEMES.deepgreen;
+        const root = document.documentElement.style;
         
-        // 名前のテキストを更新
+        let t;
+        if (s.theme === 'custom' && s.customTheme) {
+            // カスタムテーマの生成（選んだ色を基調に、目に優しい背景を自動設定）
+            t = {
+                name: s.customTheme.name,
+                bg: '#FDFBF7', // 文字が読みやすい温かい白
+                text: '#444444',
+                card: '#FFFFFF',
+                accent: s.customTheme.hex,
+                spell: s.customTheme.hex,
+                delete: '#C18E8E',
+                highlight: s.customTheme.hex + '40', // 透過率25%
+                chip: s.customTheme.hex
+            };
+        } else {
+            t = THEMES[s.theme] || THEMES.deepgreen;
+        }
+
+        // 選択中テーマ名を更新
         document.getElementById('current-theme-name').innerText = t.name;
 
-        const root = document.documentElement.style;
+        // CSS変数を適用
         root.setProperty('--bg-color', t.bg);
         root.setProperty('--text-color', t.text);
         root.setProperty('--card-bg', t.card);
@@ -373,7 +439,7 @@
 
     window.onload = () => {
         document.getElementById('font-size-slider').value = appData.settings.fontSize;
-        renderColorChips(); // 初期チップ描画
+        renderColorChips(); 
         applyStyle(); 
         renderAll();
     };
